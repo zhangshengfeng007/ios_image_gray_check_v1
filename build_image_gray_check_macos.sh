@@ -49,7 +49,14 @@ PYI_ARGS=(
     --workpath "${WORK_DIR}"
     --hidden-import "PIL.ImageTk"
     --collect-submodules "openpyxl"
+    --strip
 )
+# Try to use UPX compression if the binary is available and the
+# environment requests it.  On GitHub macOS runners we can install
+# `upx` via Homebrew and then set SMALLER=1 to add `--upx-dir`.
+if command -v upx >/dev/null 2>&1 && [[ "${SMALLER:-0}" == "1" ]]; then
+    PYI_ARGS+=(--upx-dir "$(command -v upx)")
+fi
 
 # Allow building as onedir to avoid expensive unpacking at startup. Set
 # ONEDIR=1 in the environment to use --onedir; otherwise default to

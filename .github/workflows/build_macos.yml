@@ -25,10 +25,16 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_image_gray_check_macos.sh
 
-      - name: Run build script (x86_64 via Rosetta)
+      - name: Install UPX via Homebrew (for smaller binary)
+        if: always()
+        run: brew install upx || true
+
+      - name: Run build script (console binary x86_64 via Rosetta)
+        # Do not set WINDOWED: the default is 0 which produces a single
+        # executable instead of an .app bundle.  ONEDIR is also left unset
+        # so we keep --onefile packaging (smaller but slower startup).
         env:
-          WINDOWED: 1
-          ONEDIR: 1
+          SMALLER: 1
         run: |
           arch -x86_64 ./build_image_gray_check_macos.sh
         shell: bash
