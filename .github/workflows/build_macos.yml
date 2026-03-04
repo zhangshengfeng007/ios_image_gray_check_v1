@@ -1,0 +1,37 @@
+name: Build macOS Executable
+
+# This workflow runs on GitHub-hosted macOS runners and produces a
+# standalone `image_gray_check` binary that can be downloaded from
+# the Actions UI.  It simply invokes the existing `build_image_gray_check_macos.sh`
+# script which uses PyInstaller.
+
+on:
+  push:
+    paths:
+      - 'image_gray_check.py'
+      - 'build_image_gray_check_macos.sh'
+  workflow_dispatch: # allow manual triggering from the Actions tab
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Make build script executable
+        run: chmod +x build_image_gray_check_macos.sh
+
+      - name: Run build script
+        run: ./build_image_gray_check_macos.sh
+
+      - name: Upload macOS binary as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image_gray_check-macos
+          path: dist-macos/image_gray_check
