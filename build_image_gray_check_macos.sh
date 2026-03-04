@@ -5,7 +5,9 @@ set -euo pipefail
 # Run this script on macOS only.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# The script lives at the repository root, so repo root == script dir.
+# (Historically the script assumed a `tools/` subdir and climbed one level.)
+REPO_ROOT="${SCRIPT_DIR}"
 
 APP_NAME="${APP_NAME:-image_gray_check}"
 # the script used to assume a `tools/` subdir; this repo keeps the
