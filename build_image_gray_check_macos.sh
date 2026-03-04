@@ -44,13 +44,21 @@ rm -rf "${DIST_DIR}" "${WORK_DIR}"
 PYI_ARGS=(
     --noconfirm
     --clean
-    --onefile
     --name "${APP_NAME}"
     --distpath "${DIST_DIR}"
     --workpath "${WORK_DIR}"
     --hidden-import "PIL.ImageTk"
     --collect-submodules "openpyxl"
 )
+
+# Allow building as onedir to avoid expensive unpacking at startup. Set
+# ONEDIR=1 in the environment to use --onedir; otherwise default to
+# --onefile for smaller distribution (but slower startup).
+if [[ "${ONEDIR:-0}" == "1" ]]; then
+    PYI_ARGS+=(--onedir)
+else
+    PYI_ARGS+=(--onefile)
+fi
 
 if [[ "${WINDOWED}" == "1" ]]; then
     PYI_ARGS+=(--windowed)
@@ -59,6 +67,13 @@ fi
 pyinstaller "${PYI_ARGS[@]}" "${ENTRY_FILE}"
 
 echo "[4/4] Done"
-chmod +x "${DIST_DIR}/${APP_NAME}"
-echo "Output: ${DIST_DIR}/${APP_NAME}"
-echo "Tip: run with: ${DIST_DIR}/${APP_NAME} --help"
+if [[ "${ONEDIR:-0}" == "1" ]]; then
+    # onedir: executable lives under ${DIST_DIR}/${APP_NAME}/${APP_NAME}
+    chmod +x "${DIST_DIR}/${APP_NAME}/${APP_NAME}"
+    echo "Output: ${DIST_DIR}/${APP_NAME}/${APP_NAME}"
+    echo "Tip: run with: ${DIST_DIR}/${APP_NAME}/${APP_NAME} --help"
+else
+    chmod +x "${DIST_DIR}/${APP_NAME}"
+    echo "Output: ${DIST_DIR}/${APP_NAME}"
+    echo "Tip: run with: ${DIST_DIR}/${APP_NAME} --help"
+fi
