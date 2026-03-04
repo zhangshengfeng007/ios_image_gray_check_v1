@@ -27,8 +27,14 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_image_gray_check_macos.sh
 
-      - name: Run build script
-        run: ./build_image_gray_check_macos.sh
+      - name: Run build script (Intel/Rosetta)
+        # force Rosetta so pyinstaller produces an x86_64 executable that
+        # will run on older Intel Macs.  Users with Apple Silicon can
+        # still launch via Rosetta if needed.
+        run: |
+          export WINDOWED=1
+          arch -x86_64 ./build_image_gray_check_macos.sh
+        shell: bash
 
       - name: Upload macOS binary as artifact
         uses: actions/upload-artifact@v4
