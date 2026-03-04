@@ -1,16 +1,14 @@
 name: Build macOS Executable
 
-# This workflow runs on GitHub-hosted macOS runners and produces a
-# standalone `image_gray_check` binary that can be downloaded from
-# the Actions UI.  It simply invokes the existing `build_image_gray_check_macos.sh`
-# script which uses PyInstaller.
+# Build on macOS runners for both arm64 and x86_64. Produce per-arch
+# artifacts named `image_gray_check-macos-<arch>`.
 
 on:
   push:
     paths:
       - 'image_gray_check.py'
       - 'build_image_gray_check_macos.sh'
-  workflow_dispatch: # allow manual triggering from the Actions tab
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -27,12 +25,11 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_image_gray_check_macos.sh
 
-      - name: Run build script (Intel/Rosetta)
-        # force Rosetta so pyinstaller produces an x86_64 executable that
-        # will run on older Intel Macs.  Users with Apple Silicon can
-        # still launch via Rosetta if needed.
+      - name: Run build script (x86_64 via Rosetta)
+        env:
+          WINDOWED: 1
+          ONEDIR: 1
         run: |
-          export WINDOWED=1
           arch -x86_64 ./build_image_gray_check_macos.sh
         shell: bash
 
@@ -40,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: image_gray_check-macos
-          path: dist-macos/image_gray_check
+          path: dist-macos
