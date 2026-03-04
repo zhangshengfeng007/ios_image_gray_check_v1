@@ -1161,7 +1161,22 @@ def run_gui(
         print(f"GUI不可用: {exc}", file=sys.stderr)
         return 2
 
-    GrayCheckApp(root)
+    # Hide the root window while we build the full UI to avoid a brief
+    # small default window appearing on launch. After initialization we
+    # deiconify to show the fully configured window.
+    try:
+        root.withdraw()
+    except Exception:
+        pass
+
+    app = GrayCheckApp(root)
+
+    try:
+        root.deiconify()
+        root.update_idletasks()
+    except Exception:
+        pass
+
     root.mainloop()
     return 0
 
