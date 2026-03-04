@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Build a standalone macOS executable for image_gray_check.py.
+# Run this script on macOS only.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+APP_NAME="${APP_NAME:-image_gray_check}"
+# the script used to assume a `tools/` subdir; this repo keeps the
+# Python file at the top level.
+ENTRY_FILE="${REPO_ROOT}/image_gray_check.py"
+DIST_DIR="${REPO_ROOT}/dist-macos"
+WORK_DIR="${REPO_ROOT}/build-macos/pyinstaller"
+VENV_DIR="${REPO_ROOT}/build-macos/venv-pyinstaller"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+WINDOWED="${WINDOWED:-0}"
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "Error: this script must be run on macOS (Darwin)."
+    echo "Current system: $(uname -s)"
+    exit 1
+fi
+
+if [[ ! -f "${ENTRY_FILE}" ]]; then
+    echo "Error: entry file not found: ${ENTRY_FILE}"
+    exit 1
+fi
+
+echo "[1/4] Create virtual environment: ${VENV_DIR}"
+"${PYTHON_BIN}" -m venv "${VENV_DIR}"
+source "${VENV_DIR}/bin/activate"
+
+echo "[2/4] Install build dependencies"
+python -m pip install --upgrade pip wheel
+python -m pip install pyinstaller pillow openpyxl
+
+echo "[3/4] Build executable with PyInstaller"
+rm -rf "${DIST_DIR}" "${WORK_DIR}"
+
+PYI_ARGS=(
+    --noconfirm
+    --clean
+    --onefile
+    --name "${APP_NAME}"
+    --distpath "${DIST_DIR}"
+    --workpath "${WORK_DIR}"
+    --hidden-import "PIL.ImageTk"
+    --collect-submodules "openpyxl"
+)
+
+if [[ "${WINDOWED}" == "1" ]]; then
+    PYI_ARGS+=(--windowed)
+fi
+
+pyinstaller "${PYI_ARGS[@]}" "${ENTRY_FILE}"
+
+echo "[4/4] Done"
+chmod +x "${DIST_DIR}/${APP_NAME}"
+echo "Output: ${DIST_DIR}/${APP_NAME}"
+echo "Tip: run with: ${DIST_DIR}/${APP_NAME} --help"
