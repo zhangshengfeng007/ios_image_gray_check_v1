@@ -25,6 +25,10 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_image_gray_check_macos.sh
 
+      - name: Install UPX via Homebrew (for smaller binary)
+        if: always()
+        run: brew install upx || true
+
       - name: Run build script (x86_64 via Rosetta)
         env:
           WINDOWED: 1
