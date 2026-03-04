@@ -14,10 +14,6 @@ jobs:
   build:
     runs-on: macos-latest
 
-    strategy:
-      matrix:
-        arch: [arm64, x86_64]
-
     steps:
       - uses: actions/checkout@v3
 
@@ -29,20 +25,16 @@ jobs:
       - name: Make build script executable
         run: chmod +x build_image_gray_check_macos.sh
 
-      - name: Run build script
+      - name: Run build script (x86_64 via Rosetta)
         env:
           WINDOWED: 1
           ONEDIR: 1
         run: |
-          if [ "${{ matrix.arch }}" = "x86_64" ]; then
-            arch -x86_64 ./build_image_gray_check_macos.sh
-          else
-            ./build_image_gray_check_macos.sh
-          fi
+          arch -x86_64 ./build_image_gray_check_macos.sh
         shell: bash
 
       - name: Upload macOS binary as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: image_gray_check-macos-${{ matrix.arch }}
+          name: image_gray_check-macos
           path: dist-macos
